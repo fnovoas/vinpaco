@@ -1,0 +1,18 @@
+{
+  "name": "vinpaco",
+  "version": "1.0.0",
+  "description": "Visor interactivo de paleta de colores",
+  "scripts": {
+    "build": "esbuild static/js/main.ts --bundle --outfile=static/js/visor.js --target=es2020 --minify",
+    "dev": "esbuild static/js/main.ts --bundle --outfile=static/js/visor.js --target=es2020 --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.23.1",
+    "typescript": "^5.3.3"
+  }
+}

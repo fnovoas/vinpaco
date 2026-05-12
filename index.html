@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinpaco — Visor de paleta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/style.css">
+</head>
+<body>
+<div id="root">
+  <h2>▦ Vinpaco — Visor interactivo de paleta de colores</h2>
+
+  <div id="step1">
+    <div class="section-label">Paso 1 — Generar paleta</div>
+    <div id="drop-orig" onclick="document.getElementById('file-orig').click()">
+      <div class="icon">◈</div>
+      <p><strong>Haz clic</strong> o arrastra tu imagen fuente</p>
+      <p style="margin-top:6px; font-size:11px;">PNG o JPG</p>
+      <input type="file" id="file-orig" accept="image/*">
+    </div>
+    <div class="controls-row">
+      <span class="n-label">Número de colores:</span>
+      <input type="number" id="n-colores" value="8" min="1" max="500">
+      <button class="action-btn" id="btn-generar" onclick="generarPaleta()" disabled>
+        Generar paleta
+      </button>
+      <span id="spinner">Procesando…</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="panel">
+    <div class="section-label">Paso 2 — Visor interactivo</div>
+    <div class="batch-btns">
+      <button class="batch-btn" onclick="setAll(true)">Activar todos</button>
+      <button class="batch-btn" onclick="setAll(false)">Ocultar todos</button>
+      <label class="batch-btn" id="grid-label">
+        <input type="checkbox" id="grid-toggle"
+               style="accent-color:#5c5fef; cursor:pointer; margin:0;">
+        Cuadrícula de píxeles
+      </label>
+      <button class="batch-btn" onclick="exportarColoresJSON()" style="margin-left: auto;">Exportar lista de colores</button>
+    </div>
+    <div id="color-grid"></div>
+
+    <div style="padding: 12px 0; text-align: center; font-size: 13px; color: #888ba0;">
+      Colores activos: <span id="active-color-count">—</span>/<span id="total-color-count">—</span>
+    </div>
+
+    <div class="section-label">Vista previa</div>
+    <div class="zoom-row">
+      <span id="zoom-level">×1</span>
+      <input type="range" id="zoom-slider" min="1" max="100" step="0.5" value="1">
+      <button class="batch-btn" onclick="zoomOut()">Zoom Out</button>
+      <button class="batch-btn" onclick="zoomIn()">Zoom In</button>
+    </div>
+    <div id="canvas-wrapper">
+      <canvas id="output-canvas"></canvas>
+    </div>
+    <div id="status-bar">
+      Imagen: <span id="stat-name">—</span> &nbsp;·&nbsp;
+      <span id="stat-size">—</span> &nbsp;·&nbsp;
+      Colores activos: <span id="stat-active">—</span>/<span id="stat-total">—</span> &nbsp;·&nbsp;
+      Pixel: <span id="stat-pixel-coords">—</span>
+    </div>
+    <div id="download-row">
+      <button class="action-btn" onclick="descargarImagen()">Descargar imagen</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="source-canvas" style="display:none"></canvas>
+<script src="./static/js/visor.js"></script>
+</body>
+</html>

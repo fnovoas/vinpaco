@@ -1,0 +1,20 @@
+# TypeScript / Node
+node_modules/
+*.js.map
+static/js/dist/
+
+# Ignorar JS generados EXCEPTO el bundle compilado
+static/js/*.js       # ← ignora los .ts compilados sueltos
+!static/js/visor.js  # ← MANTENER: este es el output que se despliega
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+instance/
+.webassets-cache/
