@@ -9,7 +9,7 @@ Herramienta interactiva para detectar, manipular y generar paletas de colores de
 5. Descarga la imagen resultante (aplicada la paleta).
 
 ## Despliegue
-El proyecto está configurado para desplegarse en GitHub Pages.
+El proyecto está desplegado en GitHub Pages en https://fnovoas.github.io/vinpaco/
 
 ## Tecnologías usadas
 - **TypeScript**: Para escribir toda la lógica de la aplicación, ofreciendo tipado estático, autocompletado y un código más seguro y robusto.
