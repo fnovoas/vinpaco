@@ -2,14 +2,12 @@
 Herramienta interactiva para detectar, manipular y generar paletas de colores de imágenes pequeñas usando K-Means en espacio LAB.
 
 ## Uso
+0. Accede a https://fnovoas.github.io/vinpaco/
 1. Carga una imagen de resolución menor a 1000x1000 pixeles.  
 2. Elige la cantidad de colores para la paleta.  
 3. Clica en generar paleta.  
 4. Visualiza la vista previa, pudiendo habilitar y deshabilitar cada uno de los colores, y obtener las coordenadas y color de cada pixel haciendo clic.  
 5. Descarga la imagen resultante (aplicada la paleta).
-
-## Despliegue
-El proyecto está desplegado en GitHub Pages en https://fnovoas.github.io/vinpaco/
 
 ## Tecnologías usadas
 - **TypeScript**: Para escribir toda la lógica de la aplicación, ofreciendo tipado estático, autocompletado y un código más seguro y robusto.
