@@ -5,15 +5,23 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
@@ -23,15 +31,11 @@ jobs:
       - name: Build TypeScript with esbuild
         run: npm run build
 
-      - name: Commit compiled files
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add static/js/visor.js
-          git diff-index --quiet HEAD || git commit -m "chore: build compiled assets"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          path: .          # raíz del repo (donde está index.html)
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
