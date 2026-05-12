@@ -17,7 +17,7 @@ Herramienta interactiva para detectar, manipular y generar paletas de colores de
 - **Node.js & npm**: Para la gestión de las dependencias de desarrollo y la ejecución de los scripts de compilación.
 - **live-server**: Para el servidor de desarrollo local con capacidad de recarga en tiempo real (*live-reload*).
 
-## Estructura del Proyecto
+## Estructura del proyecto
 ```text
 vinpaco
 ├── index.html           # Interfaz de usuario principal
@@ -84,4 +84,13 @@ make build
 ```
 Genera el archivo compilado y minificado en `static/js/visor.js`.
 
+## El algoritmo  
+Se usa **K-Means** para reducir la cantidad de colores de una imagen, un proceso conocido como **cuantización de paleta**. A diferencia del K-Means tradicional que trabaja directamente con todos los píxeles a la vez, esta implementación primero agrupa los colores únicos presentes en la imagen y cuenta exactamente cuántas veces aparece cada uno. Luego, para asegurar que los colores resultantes sean visualmente coherentes, convierte estos colores únicos del espacio tradicional **RGB** al espacio de color **LAB**, en el cual las distancias matemáticas representan de manera mucho más fiel las diferencias de color tal como las percibe el ojo humano.
 
+Para comenzar a buscar los colores representativos o "centros", el algoritmo utiliza un método de inicialización avanzado conocido como **K-Means++**. En lugar de elegir los colores iniciales completamente al azar, elige el primer centro aleatoriamente pero dándole más probabilidad a los colores más frecuentes de la imagen. Los siguientes centros se escogen asignando mayor probabilidad a aquellos colores que se encuentran más alejados de los centros que ya fueron elegidos. Esta técnica garantiza que los colores iniciales de la paleta estén bien distribuidos y dispersos, lo que ayuda a evitar resultados de mala calidad o colores repetidos.
+
+Una vez establecidos los centros iniciales, arranca el proceso iterativo central de K-Means, el cual se ejecuta de forma "ponderada". En cada iteración, el algoritmo asigna cada color único de la imagen original al centro más cercano midiendo la distancia en el espacio LAB. Al momento de recalcular y mover la posición de estos centros, no se hace un promedio simple de los colores asignados, sino que se toma en cuenta el "peso" o frecuencia original de cada color. Es decir, un color que ocupa miles de píxeles arrastrará el centro hacia él con mucha más fuerza que un color que aparece en un solo píxel. Estos ajustes se repiten hasta que los centros ya no se mueven significativamente o hasta alcanzar un máximo de veinte iteraciones.
+
+Dado que el resultado final del algoritmo puede depender mucho de la suerte que se tuvo al elegir los colores en el primer paso, la implementación ejecuta este proceso completo diez veces distintas desde cero. En cada uno de estos intentos, calcula un valor de inercia, que básicamente mide qué tan compactos y precisos quedaron los grupos de colores. Al terminar todos los intentos, el algoritmo descarta los demás y se queda exclusivamente con el conjunto de centros que logró la menor inercia, lo que representa matemáticamente la paleta óptima para esa imagen.
+
+En la etapa final, esos centros óptimos descubiertos en el espacio LAB se convierten de regreso al formato RGB estándar. El algoritmo hace un último recorrido por cada píxel de la imagen original, evalúa a cuál de estos nuevos colores de la paleta reducida se asemeja más, y reemplaza el color original por el nuevo, generando así la imagen resultante con los colores cuantizados y asegurándose de respetar intactos los píxeles que eran originalmente transparentes.
