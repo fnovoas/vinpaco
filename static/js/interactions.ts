@@ -3,7 +3,7 @@
  */
 import { generarPaleta as procesarPaleta, countUniqueColors } from './palette';
 import { state } from './state';
-import { renderOutput, setScale, cargarImagenGenerada, getPixelHex } from './canvas';
+import { renderOutput, setScale, cargarImagenGenerada, getPixelHex, createExportBlob } from './canvas';
 import { setAllColors } from './palette';
 import { updateChipVisual, buildUI, updateStats, highlightColorChip, unhighlightColorChips } from './ui';
 
@@ -19,6 +19,7 @@ export const setupInteractions = (): void => {
   setupCanvasInteractions();
   setupZoomControls();
   setupGridToggle();
+  setupBackgroundToggle();
   setupGeneralButtons();
   setupNColoresInput();
 };
@@ -148,6 +149,27 @@ const setupGridToggle = (): void => {
 };
 
 /**
+ * Configura el toggle de fondo claro/oscuro del visor
+ */
+const setupBackgroundToggle = (): void => {
+  const btn = document.getElementById('bg-toggle') as HTMLButtonElement;
+  const wrapper = document.getElementById('canvas-wrapper') as HTMLElement;
+  if (!btn || !wrapper) return;
+
+  const syncBackgroundToggle = (isLight: boolean): void => {
+    wrapper.classList.toggle('light-bg', isLight);
+    btn.textContent = isLight ? 'Fondo claro' : 'Fondo oscuro';
+    btn.setAttribute('aria-pressed', String(isLight));
+  };
+
+  btn.addEventListener('click', () => {
+    syncBackgroundToggle(!wrapper.classList.contains('light-bg'));
+  });
+
+  syncBackgroundToggle(false);
+};
+
+/**
  * Configura la validación del input de número de colores
  */
 const setupNColoresInput = (): void => {
@@ -246,15 +268,25 @@ const generarPaleta = async (): Promise<void> => {
 };
 
 /**
- * Descarga la imagen generada
+ * Descarga la imagen con transparencia en los colores deshabilitados
  */
-const descargarImagen = (): void => {
-  if (!state.generatedBlob) return;
+const descargarImagen = async (): Promise<void> => {
+  if (!state.sourceImageData) return;
+
+  let blob: Blob | null;
+  try {
+    blob = await createExportBlob();
+  } catch {
+    alert('No se pudo generar la imagen para descargar.');
+    return;
+  }
+  if (!blob) return;
+
   const base = state.imgName.replace(/\.[^.]+$/, '');
   const nColoresInput = document.getElementById('n-colores') as HTMLInputElement;
   const n = nColoresInput?.value ?? '8';
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(state.generatedBlob);
+  a.href = URL.createObjectURL(blob);
   a.download = `${base}_paleta_${n}.png`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);

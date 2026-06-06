@@ -3,7 +3,7 @@
  */
 
 import { state } from './state';
-import { getEnabledColorSet } from './palette';
+import { getEnabledColorSet, getActiveColorCount } from './palette';
 import { byteHex } from './utils';
 
 const RULER_PX = 20;
@@ -100,6 +100,56 @@ export const renderOutput = (): void => {
       ctx.fillText(String(row + 1), R - 3, R + row * state.scale + state.scale / 2);
     }
   }
+};
+
+/**
+ * Genera un PNG de exportación: colores deshabilitados → transparencia.
+ * Si todos están habilitados, reutiliza el blob original sin regenerar.
+ */
+export const createExportBlob = async (): Promise<Blob | null> => {
+  if (!state.sourceImageData) return null;
+
+  const allEnabled =
+    state.paletteColors.length > 0 &&
+    getActiveColorCount() === state.paletteColors.length;
+  if (allEnabled && state.generatedBlob) {
+    return state.generatedBlob;
+  }
+
+  const enabledSet = getEnabledColorSet();
+  const { width, height, data: src } = state.sourceImageData;
+  const out = new ImageData(width, height);
+  const dst = out.data;
+
+  for (let i = 0; i < src.length; i += 4) {
+    const r = src[i];
+    const g = src[i + 1];
+    const b = src[i + 2];
+    const a = src[i + 3];
+    if (a === 0) continue;
+
+    const hex = '#' + byteHex(r) + byteHex(g) + byteHex(b);
+    if (enabledSet.has(hex)) {
+      dst[i] = r;
+      dst[i + 1] = g;
+      dst[i + 2] = b;
+      dst[i + 3] = a;
+    }
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.putImageData(out, 0, 0);
+
+  return new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('toBlob falló'))),
+      'image/png'
+    )
+  );
 };
 
 /**

@@ -147,6 +147,11 @@ h2 {
 .color-chip.disabled { opacity: 0.35; border-color: #1a1a22; }
 .color-chip.highlighted { border-color: #ffffff; background: #2a2a35; }
 .color-chip.highlighted .chip-label { color: #ffffff; }
+.color-chip.marked {
+  border: 2.5px solid #6ba000;
+}
+.color-chip.marked:hover { border-color: #6ba000; }
+.color-chip.disabled.marked { border-color: #6ba000; }
 
 .chip-swatch {
   width: 16px;
@@ -201,6 +206,11 @@ h2 {
   transition: all 0.15s;
 }
 .batch-btn:hover { border-color: #5c5fef88; color: #a0a0df; background: #1a1a2e; }
+.batch-btn.toggle-on {
+  border-color: #5c5fef88;
+  color: #a0a0df;
+  background: #1a1a2e;
+}
 
 #grid-label {
   display: none;
@@ -241,6 +251,11 @@ h2 {
 #canvas-wrapper.dragging {
   cursor: grabbing;
   user-select: none;
+}
+
+#canvas-wrapper.light-bg {
+  border-color: #c8c8d4;
+  background: repeating-conic-gradient(#d4d4dc 0% 25%, #ececf2 0% 50%) 0 0 / 16px 16px;
 }
 
 #click-tooltip {

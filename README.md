@@ -1,13 +1,15 @@
 # VInPaCo - Visor Interactivo de Paleta de Colores
-Herramienta interactiva para detectar, manipular y generar paletas de colores de imágenes pequeñas usando K-Means en espacio LAB.
+Herramienta interactiva para detectar, generar y visualizar paletas de colores de imágenes pequeñas usando K-Means en espacio LAB.  
+
+>VInPaCo es útil para cuando se quiere pasar una imagen de poca resolución o tipo pixel art a otro medio color por color, y se va a trabajar con una paleta de colores limitada escogida al gusto; como para pintar en físico sobre una cuadrícula o para hacer un bordado.
 
 ## Uso
 0. Accede a https://fnovoas.github.io/vinpaco/
 1. Carga una imagen de resolución menor a 1000x1000 pixeles.  
 2. Elige la cantidad de colores para la paleta.  
 3. Clica en generar paleta.  
-4. Visualiza la vista previa, pudiendo habilitar y deshabilitar cada uno de los colores, y obtener las coordenadas y color de cada pixel haciendo clic.  
-5. Descarga la imagen resultante (aplicada la paleta).
+4. Visualiza la vista previa, pudiendo habilitar y deshabilitar cada uno de los colores, y obtener las coordenadas y color de cada pixel haciendo clic. Puedes marcar con clic derecho los colores de la lista para recordarte cuáles ya has pintado.
+5. Descarga la imagen resultante (aplicada la paleta y solo con los colores que tengas habilitados en el momento).
 
 ## Tecnologías usadas
 - **TypeScript**: Para escribir toda la lógica de la aplicación, ofreciendo tipado estático, autocompletado y un código más seguro y robusto.

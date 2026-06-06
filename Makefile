@@ -4,7 +4,7 @@ DEV_PID_FILE := .dev.pid
 SERVE_PID_FILE := .serve.pid
 
 install:
-	npm install
+	npm install --ignore-scripts
 
 build:
 	@echo "Ejecutando build.sh..."

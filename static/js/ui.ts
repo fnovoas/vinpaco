@@ -34,6 +34,10 @@ export const buildUI = (): void => {
       renderOutput();
       updateStats();
     });
+    chip.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      chip.classList.toggle('marked');
+    });
     grid.appendChild(chip);
   });
 
