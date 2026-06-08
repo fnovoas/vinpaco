@@ -18,3 +18,5 @@ static/js/*.js       # ← ignora los .ts compilados sueltos
 # Project specific
 instance/
 .webassets-cache/
+.dev.pid
+.serve.pid

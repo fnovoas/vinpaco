@@ -128,7 +128,7 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .color-chip {
@@ -190,6 +190,10 @@ h2 {
   margin-bottom: 20px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.batch-btns-view {
+  margin-bottom: 0;
 }
 
 .batch-btn {

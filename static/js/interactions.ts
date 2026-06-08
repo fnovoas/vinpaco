@@ -7,9 +7,57 @@ import { renderOutput, setScale, cargarImagenGenerada, getPixelHex, createExport
 import { setAllColors } from './palette';
 import { updateChipVisual, buildUI, updateStats, highlightColorChip, unhighlightColorChips } from './ui';
 
-const MAX_IMAGE_DIM = 999;
+const MAX_SCALED_DIM = 999;
+const SCALE_MIN_DIM = 1000;
+const REJECT_MIN_DIM = 2000;
+const MAX_PALETTE_COLORS = 500;
+const MAX_ALLOWED_COLORS = 5000;
 const ZOOM_STEP = 0.25;
 const RULER_PX = 20;
+
+const loadImageFromBlob = (blob: Blob): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    const blobUrl = URL.createObjectURL(blob);
+    img.onload = () => {
+      URL.revokeObjectURL(blobUrl);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(blobUrl);
+      reject(new Error('No se pudo leer la imagen escalada.'));
+    };
+    img.src = blobUrl;
+  });
+
+const scaleImageToMaxDim = async (
+  img: HTMLImageElement,
+  maxDim: number
+): Promise<{ blob: Blob; width: number; height: number }> => {
+  const maxSide = Math.max(img.width, img.height);
+  const factor = maxDim / maxSide;
+  const width = Math.max(1, Math.round(img.width * factor));
+  const height = Math.max(1, Math.round(img.height * factor));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('No se pudo crear el contexto de canvas.');
+
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob falló')), 'image/png')
+  );
+
+  return { blob, width, height };
+};
+
+const disableGenerarButton = (): void => {
+  const btn = document.getElementById('btn-generar') as HTMLButtonElement;
+  if (btn) btn.disabled = true;
+};
 
 /**
  * Configura los event listeners al cargar el DOM
@@ -70,43 +118,73 @@ const setOrigFile = (file: File, dropZone: Element): void => {
   const tempImg = new Image();
 
   tempImg.onload = () => {
-    if (tempImg.width > MAX_IMAGE_DIM || tempImg.height > MAX_IMAGE_DIM) {
-      alert(
-        `La imagen no puede superar ${MAX_IMAGE_DIM}×${MAX_IMAGE_DIM} píxeles.\nDimensiones: ${tempImg.width}×${tempImg.height}.`
-      );
-      state.origFile = null;
-      const btn = document.getElementById('btn-generar') as HTMLButtonElement;
-      if (btn) btn.disabled = true;
-      URL.revokeObjectURL(url);
-      return;
-    }
+    void (async () => {
+      try {
+        const origW = tempImg.width;
+        const origH = tempImg.height;
 
-    const uniqueColors = countUniqueColors(tempImg);
-    if (uniqueColors >= 9000) {
-      alert(
-        `La imagen no puede tener 9000 colores o más.\nColores detectados: ${uniqueColors}.`
-      );
-      state.origFile = null;
-      const btn = document.getElementById('btn-generar') as HTMLButtonElement;
-      if (btn) btn.disabled = true;
-      URL.revokeObjectURL(url);
-      return;
-    }
+        if (origW >= REJECT_MIN_DIM || origH >= REJECT_MIN_DIM) {
+          alert(
+            `La imagen no puede tener ${REJECT_MIN_DIM} píxeles o más en alguna dimensión.\nDimensiones: ${origW}×${origH}.`
+          );
+          state.origFile = null;
+          disableGenerarButton();
+          return;
+        }
 
-    state.origFile = file;
-    state.imgName = file.name;
-    const p = dropZone.querySelector('p');
-    if (p) p.innerHTML = `<strong>${file.name}</strong>`;
-    const btn = document.getElementById('btn-generar') as HTMLButtonElement;
-    if (btn) btn.disabled = false;
-    URL.revokeObjectURL(url);
+        let workImg = tempImg;
+        let workFile = file;
+        const maxSide = Math.max(origW, origH);
+
+        if (maxSide >= SCALE_MIN_DIM) {
+          const scaled = await scaleImageToMaxDim(tempImg, MAX_SCALED_DIM);
+          workFile = new File([scaled.blob], file.name, { type: 'image/png' });
+          workImg = await loadImageFromBlob(scaled.blob);
+          alert(
+            `Dimensiones detectadas: ${origW}×${origH}. Imagen escalada a ${scaled.width}×${scaled.height} píxeles.`
+          );
+        }
+
+        const uniqueColors = countUniqueColors(workImg);
+
+        if (uniqueColors >= MAX_ALLOWED_COLORS) {
+          alert(
+            `La imagen no puede tener ${MAX_ALLOWED_COLORS} colores o más.\nColores detectados: ${uniqueColors}.`
+          );
+          state.origFile = null;
+          disableGenerarButton();
+          return;
+        }
+
+        state.origFile = workFile;
+        state.imgName = file.name;
+        const p = dropZone.querySelector('p');
+        if (p) p.innerHTML = `<strong>${file.name}</strong>`;
+        const btn = document.getElementById('btn-generar') as HTMLButtonElement;
+        if (btn) btn.disabled = false;
+
+        if (uniqueColors > MAX_PALETTE_COLORS) {
+          const nColoresInput = document.getElementById('n-colores') as HTMLInputElement;
+          if (nColoresInput) nColoresInput.value = String(MAX_PALETTE_COLORS);
+          alert(
+            `Colores detectados en la imagen: ${uniqueColors}. Reduciendo su paleta a ${MAX_PALETTE_COLORS} colores. Esto puede tardar unos minutos.`
+          );
+          void procesarPaletaDesdeArchivo(MAX_PALETTE_COLORS);
+        }
+      } catch (err) {
+        alert('Error al procesar la imagen:\n' + (err as Error).message);
+        state.origFile = null;
+        disableGenerarButton();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    })();
   };
 
   tempImg.onerror = () => {
     alert('No se pudo leer la imagen. Elije un archivo de imagen válido.');
     state.origFile = null;
-    const btn = document.getElementById('btn-generar') as HTMLButtonElement;
-    if (btn) btn.disabled = true;
+    disableGenerarButton();
     URL.revokeObjectURL(url);
   };
 
@@ -176,11 +254,13 @@ const setupNColoresInput = (): void => {
   const input = document.getElementById('n-colores') as HTMLInputElement;
   if (!input) return;
 
+  input.max = String(MAX_PALETTE_COLORS);
+
   input.addEventListener('input', () => {
     if (input.value === '') return;
     const val = parseInt(input.value, 10);
-    if (val > 500) {
-      input.value = '500';
+    if (val > MAX_PALETTE_COLORS) {
+      input.value = String(MAX_PALETTE_COLORS);
     } else if (val <= 0) {
       input.value = '1';
     }
@@ -212,14 +292,10 @@ const setupGeneralButtons = (): void => {
 };
 
 /**
- * Genera la paleta mediante llamada a Flask
+ * Procesa la imagen original y muestra la paleta generada
  */
-const generarPaleta = async (): Promise<void> => {
-  if (!state.origFile) return;
-
-  const nColoresInput = document.getElementById('n-colores') as HTMLInputElement;
-  const nColores = parseInt(nColoresInput?.value ?? '8', 10);
-  if (!nColores || nColores < 1) return;
+const procesarPaletaDesdeArchivo = async (nColores: number): Promise<void> => {
+  if (!state.origFile || nColores < 1) return;
 
   const btn = document.getElementById('btn-generar') as HTMLButtonElement;
   const spinner = document.getElementById('spinner');
@@ -228,7 +304,6 @@ const generarPaleta = async (): Promise<void> => {
   if (spinner) spinner.style.display = 'inline';
 
   try {
-    // Cargar imagen en canvas oculto para obtener ImageData
     const url = URL.createObjectURL(state.origFile);
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
       const i = new Image();
@@ -245,10 +320,8 @@ const generarPaleta = async (): Promise<void> => {
     ctx.drawImage(img, 0, 0);
     const imageData = ctx.getImageData(0, 0, img.width, img.height);
 
-    // Procesar en TypeScript (sin servidor)
     const resultData = procesarPaleta(imageData, nColores);
 
-    // Convertir ImageData → Blob
     const offscreen = document.createElement('canvas');
     offscreen.width = img.width;
     offscreen.height = img.height;
@@ -265,6 +338,19 @@ const generarPaleta = async (): Promise<void> => {
     if (btn) btn.disabled = false;
     if (spinner) spinner.style.display = 'none';
   }
+};
+
+/**
+ * Genera la paleta con el número de colores indicado en el formulario
+ */
+const generarPaleta = async (): Promise<void> => {
+  if (!state.origFile) return;
+
+  const nColoresInput = document.getElementById('n-colores') as HTMLInputElement;
+  const nColores = parseInt(nColoresInput?.value ?? '8', 10);
+  if (!nColores || nColores < 1) return;
+
+  await procesarPaletaDesdeArchivo(nColores);
 };
 
 /**

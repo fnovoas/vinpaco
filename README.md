@@ -5,11 +5,13 @@ Herramienta interactiva para detectar, generar y visualizar paletas de colores d
 
 ## Uso
 0. Accede a https://fnovoas.github.io/vinpaco/
-1. Carga una imagen de resolución menor a 1000x1000 pixeles.  
-2. Elige la cantidad de colores para la paleta.  
-3. Clica en generar paleta.  
-4. Visualiza la vista previa, pudiendo habilitar y deshabilitar cada uno de los colores, y obtener las coordenadas y color de cada pixel haciendo clic. Puedes marcar con clic derecho los colores de la lista para recordarte cuáles ya has pintado.
-5. Descarga la imagen resultante (aplicada la paleta y solo con los colores que tengas habilitados en el momento).
+1. Carga una imagen (en general, de poca resolución y que contenga pocos colores).  
+Al subirla, el sistema aplica estos límites:
+   - **Resolución:** si la dimensión mayor mide entre 1000 y 1999 px, se escala automáticamente para que quede en 999 px, manteniendo la proporción. Si alguna dimensión es 2000 px o más, la imagen se rechaza.
+   - **Colores:** si la imagen tiene más de 500 colores únicos (pero menos de 5000), se reduce automáticamente su paleta a 500 colores. Con 5000 colores o más, se rechaza.
+2. Elige la cantidad de colores para la paleta (entre 1 y 500) y pulsa **Generar paleta** si quieres una paleta distinta a la aplicada al cargar.
+3. Visualiza la vista previa, pudiendo habilitar y deshabilitar cada uno de los colores, y obtener las coordenadas y color de cada pixel haciendo clic. Puedes marcar con clic derecho los colores de la lista para recordarte cuáles ya has pintado.
+4. Descarga la imagen resultante (aplicada la paleta y solo con los colores que tengas habilitados en el momento).
 
 ## Tecnologías usadas
 - **TypeScript**: Para escribir toda la lógica de la aplicación, ofreciendo tipado estático, autocompletado y un código más seguro y robusto.
@@ -68,11 +70,10 @@ npm install
    ```
 
 Se puede hacer esto mediante  
-```make dev```  
-```make serve```  
+```make start```  
 Abrir ```http://localhost:8080```   
 
-```make stop``` para apagar todo.  
+```make stop``` para apagar todo. ```make restart``` detiene, espera 2 segundos y vuelve a iniciar.  
 
 Los cambios en TypeScript se recompilan automáticamente y el navegador se actualiza al guardar.
 

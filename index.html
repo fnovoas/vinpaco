@@ -35,7 +35,11 @@
 
   <div id="panel">
     <div class="section-label">Paso 2 — Visor interactivo</div>
-    <div class="batch-btns">
+    <div class="batch-btns batch-btns-top">
+      <button class="batch-btn" onclick="exportarColoresJSON()" style="margin-left: auto;">Exportar lista de colores</button>
+    </div>
+    <div id="color-grid"></div>
+    <div class="batch-btns batch-btns-view">
       <button class="batch-btn" onclick="setAll(true)">Activar todos</button>
       <button class="batch-btn" onclick="setAll(false)">Ocultar todos</button>
       <label class="batch-btn" id="grid-label">
@@ -46,9 +50,7 @@
       <button class="batch-btn toggle-on" id="bg-toggle" type="button" aria-pressed="false">
         Fondo oscuro
       </button>
-      <button class="batch-btn" onclick="exportarColoresJSON()" style="margin-left: auto;">Exportar lista de colores</button>
     </div>
-    <div id="color-grid"></div>
 
     <div style="padding: 12px 0; text-align: center; font-size: 13px; color: #888ba0;">
       Colores activos: <span id="active-color-count">—</span>/<span id="total-color-count">—</span>
